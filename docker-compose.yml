@@ -1,0 +1,18 @@
+services:
+  tests:
+    build: .
+    command: pytest
+    volumes:
+      - .:/workspace
+
+  example:
+    build: .
+    command: python examples/generic_tabular_analysis.py --out reports/example
+    volumes:
+      - .:/workspace
+
+  shell:
+    build: .
+    command: bash
+    volumes:
+      - .:/workspace
