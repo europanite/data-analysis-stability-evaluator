@@ -1,4 +1,4 @@
-# analysis-stability-evaluator
+# [analysis-stability-evaluator](https://github.com/europanite/analysis-stability-evaluator "analysis-stability-evaluator")
 
 `analysis-stability-evaluator` is a pip-installable Python package for checking whether a tabular data analysis project is stable under small data changes.
 
@@ -31,6 +31,13 @@ The package supports four stability layers:
    - compute disagreement rate and numeric prediction drift
 
 ## Installation
+
+### 0. Create virtual environment
+
+```bash
+python3 -m venv env
+source env/bin/activate
+```
 
 From this repository:
 
@@ -102,6 +109,12 @@ evaluator = StabilityEvaluator(analysis_fn=analysis, config=config, n_runs=20)
 report = evaluator.evaluate(baseline)
 print(report.summary)
 print(report.details.head())
+```
+
+### Deactivate environment
+
+```bash
+deactivate
 ```
 
 ## Docker Compose workflow

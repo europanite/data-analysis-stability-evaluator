@@ -16,3 +16,10 @@ def test_profile_compare_detects_schema_change():
     report = DataProfiler.compare(base, cand)
     assert report.risk_score > 0
     assert "schema.columns" in set(report.to_frame()["name"])
+
+
+def test_numeric_dtype_roundtrip_is_not_schema_break():
+    baseline = pd.DataFrame({"x": pd.Series([1, 2, 3], dtype="int64")})
+    candidate = pd.DataFrame({"x": pd.Series([1.0, 2.0, float("nan")], dtype="float64")})
+    report = DataProfiler.compare(baseline, candidate)
+    assert "schema.dtypes" not in set(report.to_frame()["name"])

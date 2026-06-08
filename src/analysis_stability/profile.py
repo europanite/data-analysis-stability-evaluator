@@ -108,7 +108,11 @@ class DataProfiler:
             scores.append(weighted)
 
         common_cols = sorted(base_cols & cand_cols)
-        dtype_changes = [col for col in common_cols if base_profile.dtypes[col] != cand_profile.dtypes[col]]
+        dtype_changes = [
+            col
+            for col in common_cols
+            if _dtype_family(baseline[col]) != _dtype_family(candidate[col])
+        ]
         if dtype_changes:
             dtype_score = clipped01(len(dtype_changes) / max(len(common_cols), 1) * schema_weight)
             findings.append(
@@ -118,7 +122,7 @@ class DataProfiler:
                     candidate={c: cand_profile.dtypes[c] for c in dtype_changes},
                     score=dtype_score,
                     severity=severity_from_score(dtype_score),
-                    detail="dtype changed columns",
+                    detail="dtype family changed columns",
                 )
             )
             scores.append(dtype_score)
@@ -198,3 +202,21 @@ class DataProfiler:
             scores.append(tvd)
 
         return ComparisonReport(findings=tuple(findings), risk_score=aggregate_risk(scores))
+
+
+def _dtype_family(series: pd.Series) -> str:
+    """Return a semantic dtype family for stability checks.
+
+    Exact pandas dtypes can change during harmless CSV round trips or when small
+    missingness is injected, for example int64 becoming float64. For stability
+    evaluation, numeric-to-numeric should not be treated as a schema break.
+    """
+    if pd.api.types.is_bool_dtype(series):
+        return "boolean"
+    if pd.api.types.is_numeric_dtype(series):
+        return "numeric"
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return "datetime"
+    if isinstance(series.dtype, pd.CategoricalDtype):
+        return "categorical"
+    return "object"

@@ -1,5 +1,24 @@
 # Usage guide
 
+## 0. Create or provide input CSV files
+
+The `profile` command compares two existing CSV files. If you want quick sample inputs, run:
+
+```bash
+analysis-stability sample-data --out data
+```
+
+This creates:
+
+- `data/baseline.csv`
+- `data/candidate.csv`
+
+Then run:
+
+```bash
+analysis-stability profile data/baseline.csv data/candidate.csv --out reports/profile_stability.json
+```
+
 ## 1. Decide what must be stable
 
 For a general data analysis project, define the outputs that matter:

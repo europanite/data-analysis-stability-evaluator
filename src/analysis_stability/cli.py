@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import pandas as pd
 
-from analysis_stability.evaluator import StabilityEvaluator
 from analysis_stability.perturb import PerturbationConfig, perturb_dataframe
 from analysis_stability.profile import DataProfiler
 from analysis_stability.report import write_csv, write_json
@@ -28,14 +28,29 @@ def main(argv: list[str] | None = None) -> int:
     perturb_parser.add_argument("--out", required=True)
     _add_perturbation_args(perturb_parser)
 
+    sample_parser = sub.add_parser("sample-data", help="Create sample baseline.csv and candidate.csv files.")
+    sample_parser.add_argument("--out", default="data")
+    sample_parser.add_argument("--rows", type=int, default=500)
+    sample_parser.add_argument("--data-seed", type=int, default=7)
+    _add_perturbation_args(sample_parser)
+
     example_parser = sub.add_parser("example", help="Run a built-in generic tabular stability example.")
     example_parser.add_argument("--out", default="reports/example")
 
     args = parser.parse_args(argv)
 
     if args.command == "profile":
-        baseline = pd.read_csv(args.baseline_csv)
-        candidate = pd.read_csv(args.candidate_csv)
+        try:
+            baseline = _read_existing_csv(args.baseline_csv, "baseline_csv")
+            candidate = _read_existing_csv(args.candidate_csv, "candidate_csv")
+        except FileNotFoundError as exc:
+            print(str(exc), file=sys.stderr)
+            print(
+                "Create sample inputs with: analysis-stability sample-data --out data",
+                file=sys.stderr,
+            )
+            return 2
+
         report = DataProfiler.compare(baseline, candidate)
         write_json(args.out, {"summary": report.summary, "findings": report.to_frame().to_dict(orient="records")})
         if args.csv_out:
@@ -45,12 +60,36 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "perturb":
-        df = pd.read_csv(args.input_csv)
+        try:
+            df = _read_existing_csv(args.input_csv, "input_csv")
+        except FileNotFoundError as exc:
+            print(str(exc), file=sys.stderr)
+            print(
+                "Create sample inputs with: analysis-stability sample-data --out data",
+                file=sys.stderr,
+            )
+            return 2
+
         config = _config_from_args(args)
         out = perturb_dataframe(df, config)
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         out.to_csv(args.out, index=False)
         print(f"wrote {args.out}")
+        return 0
+
+    if args.command == "sample-data":
+        from analysis_stability.demo import make_demo_data
+
+        out_dir = Path(args.out)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        baseline = make_demo_data(n=args.rows, seed=args.data_seed)
+        candidate = perturb_dataframe(baseline, _config_from_args(args))
+        baseline_path = out_dir / "baseline.csv"
+        candidate_path = out_dir / "candidate.csv"
+        baseline.to_csv(baseline_path, index=False)
+        candidate.to_csv(candidate_path, index=False)
+        print(f"wrote {baseline_path}")
+        print(f"wrote {candidate_path}")
         return 0
 
     if args.command == "example":
@@ -62,6 +101,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     raise AssertionError(f"unknown command: {args.command}")
+
+
+def _read_existing_csv(path: str | Path, argument_name: str) -> pd.DataFrame:
+    csv_path = Path(path)
+    if not csv_path.exists():
+        raise FileNotFoundError(f"{argument_name} not found: {csv_path}")
+    return pd.read_csv(csv_path)
 
 
 def _add_perturbation_args(parser: argparse.ArgumentParser) -> None:
