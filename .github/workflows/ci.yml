@@ -1,0 +1,79 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-test-images:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build service TEST image 
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker build \
+            -f backend/Dockerfile.test \
+            -t local/backend-test:ci \
+            backend
+      - name: Save images for downstream jobs
+        run: |
+          docker save local/backend-test:ci | gzip > backend-test.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-images
+          path: backend-test.tar.gz
+  service-tests:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+    needs: build-test-images
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v6
+        with:
+          name: test-images
+      - name: Load images
+        run: |
+          gunzip -c backend-test.tar.gz | docker load
+      - name: Prepare report dir on host (mounted into /reports)
+        run: mkdir -p backend/reports/ci
+      - name: Run backend tests
+        run: |
+          docker compose -f docker-compose.test.yml run --rm --entrypoint /bin/sh backend_test -lc '
+              python -m coverage run -m pytest
+            '
+      - name: Upload coverage xml
+        uses: actions/upload-artifact@v5
+        with:
+          name: coverage-xml
+          path: backend/reports/ci/coverage.xml
+          if-no-files-found: error
+      - name: Cleanup
+        env:
+          DOCKER_BUILDKIT: 1
+          HOST_UID: "1000"
+          HOST_GID: "1000"
+          DISPLAY: ":1"
+          HOST_USERNAME: user
+          HOST_GROUPNAME: group
+        if: always()
+        run: |
+          docker compose  down -v --remove-orphans
