@@ -1,5 +1,12 @@
 # [analysis-stability-evaluator](https://github.com/europanite/analysis-stability-evaluator "analysis-stability-evaluator")
 
+[![CI](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/ci.yml/badge.svg)](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/ci.yml)
+[![CodeQL Advanced](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/codeql.yml/badge.svg)](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/codeql.yml)
+[![pages-build-deployment](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/pages/pages-build-deployment)
+[![Publish Python package](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/publish.yml/badge.svg)](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/publish.yml)
+[![Pytest](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/pytest.yml/badge.svg)](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/pytest.yml)
+[![Python Lint](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/lint.yml/badge.svg)](https://github.com/europanite/data-analysis-stability-evaluator/actions/workflows/lint.yml)
+
 `analysis-stability-evaluator` is a pip-installable Python package for checking whether a tabular data analysis project is stable under small data changes.
 
 The package is designed for ordinary data-analysis repositories where the risk is not only model accuracy, but also whether conclusions, aggregate values, rankings, feature summaries, and prediction outputs change too much when the input data changes slightly.
