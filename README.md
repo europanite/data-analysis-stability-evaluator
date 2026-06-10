@@ -32,16 +32,17 @@ The package supports four stability layers:
 
 ## Installation
 
-### 0. Create virtual environment
+From PyPI:
 
 ```bash
-python3 -m venv env
-source env/bin/activate
+python -m pip install analysis-stability-evaluator
 ```
 
 From this repository:
 
 ```bash
+python3 -m venv env
+source env/bin/activate
 python -m pip install -e .
 ```
 
@@ -140,3 +141,14 @@ docker compose run --rm shell
 ## Design principle
 
 The package is intentionally conservative. A small risk score does not prove that an analysis is correct. It only shows that the selected outputs were not very sensitive to the tested small input changes. The user should choose perturbation settings and thresholds that match the domain risk.
+
+## CI and release pipeline
+
+This repository uses GitHub Actions to run tests, lint the source, build the source distribution and wheel, and smoke-test the built wheel.
+
+Package publishing is handled by `.github/workflows/publish.yml` with PyPI Trusted Publishing:
+
+- manual workflow dispatch publishes to TestPyPI for rehearsal
+- a published GitHub Release whose tag matches `v<pyproject version>` publishes to PyPI
+
+See [`docs/release.md`](docs/release.md) for the full release procedure.

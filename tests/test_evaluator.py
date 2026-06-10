@@ -4,7 +4,11 @@ from analysis_stability import PerturbationConfig, StabilityEvaluator, perturb_d
 
 
 def analysis(df: pd.DataFrame) -> dict:
-    return {"rows": len(df), "mean_x": df["x"].mean(), "group_share": df["group"].value_counts(normalize=True).to_dict()}
+    return {
+        "rows": len(df),
+        "mean_x": df["x"].mean(),
+        "group_share": df["group"].value_counts(normalize=True).to_dict(),
+    }
 
 
 def test_perturb_dataframe_preserves_columns():

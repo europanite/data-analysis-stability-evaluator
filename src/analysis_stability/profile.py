@@ -187,7 +187,11 @@ class DataProfiler:
         common_categorical = sorted(set(base_profile.categorical) & set(cand_profile.categorical))
         for col in common_categorical:
             tvd = clipped01(
-                total_variation_distance(base_profile.categorical[col], cand_profile.categorical[col]) * categorical_weight
+                total_variation_distance(
+                    base_profile.categorical[col],
+                    cand_profile.categorical[col],
+                )
+                * categorical_weight
             )
             findings.append(
                 MetricFinding(

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass, replace
-from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -25,7 +25,7 @@ class PerturbationConfig:
     categorical_swap_rate: float = 0.00
     random_seed: int | None = 42
 
-    def with_seed(self, seed: int | None) -> "PerturbationConfig":
+    def with_seed(self, seed: int | None) -> PerturbationConfig:
         return replace(self, random_seed=seed)
 
 

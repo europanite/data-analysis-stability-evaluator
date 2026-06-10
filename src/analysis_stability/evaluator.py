@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 import pandas as pd
 
-from analysis_stability.compare import ComparisonReport, MetricFinding, aggregate_risk, severity_from_score
+from analysis_stability.compare import ComparisonReport, aggregate_risk, severity_from_score
 from analysis_stability.flatten import flatten_output
 from analysis_stability.metrics import clipped01, relative_change, safe_float
 from analysis_stability.perturb import PerturbationConfig, generate_perturbations

@@ -1,5 +1,6 @@
-from analysis_stability.metrics import approximate_ks_statistic, total_variation_distance
 import pandas as pd
+
+from analysis_stability.metrics import approximate_ks_statistic, total_variation_distance
 
 
 def test_total_variation_distance():
