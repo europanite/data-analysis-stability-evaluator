@@ -31,6 +31,8 @@ dependencies = [
 dev = [
   "pytest>=8,<10",
   "ruff>=0.8,<1",
+  "build>=1.0,<2",
+  "twine>=5.0,<7",
 ]
 release = [
   "build>=1.0,<2",
