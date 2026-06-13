@@ -11,12 +11,9 @@ on:
         options:
           - testpypi
           - pypi
-  release:
-    types: [published]
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   build:
@@ -64,8 +61,8 @@ jobs:
     environment:
       name: testpypi
     permissions:
-      id-token: write
       contents: read
+      id-token: write
 
     steps:
       - name: Download distributions
@@ -83,13 +80,13 @@ jobs:
   publish-pypi:
     name: Publish to PyPI
     needs: build
-    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi'
     runs-on: ubuntu-latest
     environment:
       name: pypi
     permissions:
-      id-token: write
       contents: read
+      id-token: write
 
     steps:
       - name: Download distributions
