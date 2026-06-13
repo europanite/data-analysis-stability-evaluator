@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-WORKDIR /workspace
+WORKDIR /workspace/service
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,6 +12,6 @@ COPY tests ./tests
 COPY examples ./examples
 
 RUN python -m pip install --upgrade pip \
-    && python -m pip install -e ".[dev,plots]"
+    && python -m pip install -e ".[dev]"
 
 CMD ["pytest"]
