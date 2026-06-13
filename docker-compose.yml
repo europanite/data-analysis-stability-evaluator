@@ -1,9 +1,7 @@
 services:
   tests:
-    build:
-      context: .
-      dockerfile: service/Dockerfile
-    working_dir: /workspace
+    build: ./service
+    working_dir: /workspace/service
     command: pytest
     environment:
       PYTHONPATH: /workspace/service/src
@@ -11,21 +9,17 @@ services:
       - .:/workspace
 
   example:
-    build:
-      context: .
-      dockerfile: service/Dockerfile
-    working_dir: /workspace
-    command: python service/examples/generic_tabular_analysis.py --out reports/example
+    build: ./service
+    working_dir: /workspace/service
+    command: python examples/generic_tabular_analysis.py --out reports/example
     environment:
       PYTHONPATH: /workspace/service/src
     volumes:
       - .:/workspace
 
   shell:
-    build:
-      context: .
-      dockerfile: service/Dockerfile
-    working_dir: /workspace
+    build: ./service
+    working_dir: /workspace/service
     command: bash
     environment:
       PYTHONPATH: /workspace/service/src

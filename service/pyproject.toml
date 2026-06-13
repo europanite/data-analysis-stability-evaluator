@@ -6,10 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "data-analysis-stability-evaluator"
 version = "0.0.1"
 description = "Reusable stability evaluation toolkit for tabular data analysis projects under small data changes."
-readme = "README.md"
+readme = { text = "Reusable stability evaluation toolkit for tabular data analysis projects under small data changes.", content-type = "text/markdown" }
 requires-python = ">=3.10"
 license = "Apache-2.0"
-license-files = ["LICENSE"]
 authors = [{ name = "europanite" }]
 keywords = ["data-analysis", "stability", "robustness", "data-quality", "pandas", "perturbation"]
 classifiers = [
@@ -48,15 +47,15 @@ analysis-stability = "data_analysis_stability_evaluator.cli:main"
 data-analysis-stability-evaluator = "data_analysis_stability_evaluator.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["service/src"]
+where = ["src"]
 
 [tool.pytest.ini_options]
-testpaths = ["service/tests"]
+testpaths = ["tests"]
 addopts = "-q"
 
 [tool.ruff]
 line-length = 120
-src = ["service/src", "service/tests", "service/examples"]
+src = ["src", "tests", "examples"]
 target-version = "py310"
 
 [tool.ruff.lint]
