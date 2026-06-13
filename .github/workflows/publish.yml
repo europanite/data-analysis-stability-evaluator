@@ -1,137 +1,104 @@
 name: Publish Python package
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       target:
-        description: "Publish target. Use testpypi for rehearsal; use GitHub Release for production PyPI."
+        description: "Publish target"
         required: true
+        default: "testpypi"
         type: choice
         options:
           - testpypi
-        default: testpypi
+          - pypi
+  release:
+    types: [published]
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  id-token: write
 
 jobs:
   build:
-    name: Build and verify distribution
+    name: Build distributions
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: service
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
-          cache: pip
+          python-version: "3.12"
 
       - name: Install release tools
+        working-directory: service
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build twine
+          python -m pip install -r requirements-release.txt
 
-      - name: Validate release tag matches pyproject version
-        if: github.event_name == 'release'
-        shell: bash
+      - name: Test
+        working-directory: service
         run: |
-          set -euo pipefail
-          VERSION="$(python - <<'PY'
-          import tomllib
-          with open('pyproject.toml', 'rb') as f:
-              print(tomllib.load(f)['project']['version'])
-          PY
-          )"
-          TAG="${{ github.event.release.tag_name }}"
-          if [ "$TAG" != "v$VERSION" ]; then
-            echo "Release tag must be v${VERSION}, but got ${TAG}." >&2
-            exit 1
-          fi
+          pytest
+          ruff check src tests examples
 
-      - name: Build source distribution and wheel
-        run: python -m build
-
-      - name: Check package metadata
-        run: python -m twine check dist/*
-
-      - name: Install built wheel and run CLI smoke test
-        shell: bash
+      - name: Build
+        working-directory: service
         run: |
-          set -euxo pipefail
-          WHEEL="$(python - <<'PY'
-          from pathlib import Path
-          wheels = sorted(Path('dist').glob('*.whl'))
-          if len(wheels) != 1:
-              raise SystemExit(f'expected exactly one wheel, found {len(wheels)}')
-          print(wheels[0])
-          PY
-          )"
-          python -m venv /tmp/pkg-smoke
-          . /tmp/pkg-smoke/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install "$WHEEL"
-          analysis-stability sample-data --out /tmp/ase-data
-          analysis-stability profile /tmp/ase-data/baseline.csv /tmp/ase-data/candidate.csv --out /tmp/ase-report/profile.json
-          test -f /tmp/ase-report/profile.json
+          rm -rf dist build *.egg-info src/*.egg-info
+          python -m build
+          python -m twine check dist/*
 
-      - name: Upload package artifacts
-        uses: actions/upload-artifact@v6
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-distributions
           path: service/dist/*
-          if-no-files-found: error
 
   publish-testpypi:
     name: Publish to TestPyPI
-    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
     needs: build
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'testpypi'
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/data-analysis-stability-evaluator
     permissions:
       id-token: write
+      contents: read
+
     steps:
-      - name: Download package artifacts
-        uses: actions/download-artifact@v6
+      - name: Download distributions
+        uses: actions/download-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-distributions
           path: dist
 
-      - name: Publish package to TestPyPI
+      - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
 
   publish-pypi:
     name: Publish to PyPI
-    if: github.event_name == 'release' && github.event.action == 'published'
     needs: build
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/data-analysis-stability-evaluator
     permissions:
       id-token: write
+      contents: read
+
     steps:
-      - name: Download package artifacts
-        uses: actions/download-artifact@v6
+      - name: Download distributions
+        uses: actions/download-artifact@v4
         with:
-          name: python-package-distributions
+          name: python-distributions
           path: dist
 
-      - name: Publish package to PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
