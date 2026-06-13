@@ -59,10 +59,10 @@ jobs:
           fi
 
       - name: Build source distribution and wheel
-        run: python -m build
+        run: python -m build service --outdir service/dist
 
       - name: Check package metadata
-        run: python -m twine check dist/*
+        run: python -m twine check service/dist/*
 
       - name: Install built wheel and run CLI smoke test
         shell: bash
