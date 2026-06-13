@@ -8,11 +8,11 @@ from typing import Any
 
 import pandas as pd
 
-from analysis_stability.compare import ComparisonReport, aggregate_risk, severity_from_score
-from analysis_stability.flatten import flatten_output
-from analysis_stability.metrics import clipped01, relative_change, safe_float
-from analysis_stability.perturb import PerturbationConfig, generate_perturbations
-from analysis_stability.profile import DataProfiler
+from data_analysis_stability_evaluator.compare import ComparisonReport, aggregate_risk, severity_from_score
+from data_analysis_stability_evaluator.flatten import flatten_output
+from data_analysis_stability_evaluator.metrics import clipped01, relative_change, safe_float
+from data_analysis_stability_evaluator.perturb import PerturbationConfig, generate_perturbations
+from data_analysis_stability_evaluator.profile import DataProfiler
 
 
 @dataclass(frozen=True)
