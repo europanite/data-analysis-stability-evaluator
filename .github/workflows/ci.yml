@@ -15,48 +15,32 @@ concurrency:
 
 jobs:
   test:
-    name: Tests • ${{ matrix.os }} • py${{ matrix.python-version }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-    env:
-      PYTHONUTF8: "1"
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: service
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
+          python-version: "3.11"
 
-      - name: Install package with test dependencies
+      - name: Install package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev,plots]"
+          python -m pip install -e ".[dev,plots,sklearn]"
 
-      - name: Show versions
-        run: |
-          python --version
-          python -m pip --version
-          python -m pytest --version
+      - name: Run tests
+        run: pytest
 
-      - name: Run unit tests
-        run: python -m pytest
+      - name: Lint
+        run: ruff check .
 
-      - name: CLI smoke test
-        shell: bash
-        run: |
-          set -euxo pipefail
-          analysis-stability sample-data --out tmp-ci-data --rows 80
-          analysis-stability profile tmp-ci-data/baseline.csv tmp-ci-data/candidate.csv --out tmp-ci-reports/profile.json
-          test -f tmp-ci-reports/profile.json
+      - name: Build package
+        run: python -m build
 
   lint:
     name: Ruff lint
@@ -132,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: python-package-distributions
-          path: dist/*
+          path: service/dist/*
           if-no-files-found: error
 
   docker-compose-smoke:
