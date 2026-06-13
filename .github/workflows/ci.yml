@@ -31,16 +31,19 @@ jobs:
       - name: Install package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e "./service[dev,plots,sklearn]"
+          python -m pip install -e ".[dev,plots,sklearn]"
 
       - name: Run tests
+        working-directory: service
         run: pytest
 
       - name: Lint
+        working-directory: service
         run: ruff check .
 
       - name: Build package
-        run: python -m build service --outdir service/dist
+        working-directory: service
+        run: python -m build
 
   lint:
     name: Ruff lint
@@ -60,7 +63,7 @@ jobs:
       - name: Install lint dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e "./service[dev]"
+          python -m pip install -e ".[dev]"
 
       - name: Run Ruff
         run: python -m ruff check src tests examples
@@ -87,10 +90,10 @@ jobs:
           python -m pip install build twine
 
       - name: Build source distribution and wheel
-        run: python -m build service --outdir service/dist
+        run: python -m build
 
       - name: Check package metadata
-        run: python -m twine check service/dist/*
+        run: python -m twine check dist/*
 
       - name: Install built wheel and run CLI smoke test
         shell: bash
