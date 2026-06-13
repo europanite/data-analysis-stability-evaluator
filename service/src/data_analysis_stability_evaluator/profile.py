@@ -7,7 +7,12 @@ from typing import Any
 
 import pandas as pd
 
-from data_analysis_stability_evaluator.compare import ComparisonReport, MetricFinding, aggregate_risk, severity_from_score
+from data_analysis_stability_evaluator.compare import (
+    ComparisonReport,
+    MetricFinding,
+    aggregate_risk,
+    severity_from_score,
+)
 from data_analysis_stability_evaluator.metrics import (
     approximate_ks_statistic,
     clipped01,
