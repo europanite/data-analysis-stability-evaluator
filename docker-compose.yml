@@ -1,18 +1,27 @@
 services:
   tests:
-    build: .
+    build: ./service
+    working_dir: /workspace/service
     command: pytest
+    environment:
+      PYTHONPATH: /workspace/service/src
     volumes:
       - .:/workspace
 
   example:
-    build: .
+    build: ./service
+    working_dir: /workspace/service
     command: python examples/generic_tabular_analysis.py --out reports/example
+    environment:
+      PYTHONPATH: /workspace/service/src
     volumes:
       - .:/workspace
 
   shell:
-    build: .
+    build: ./service
+    working_dir: /workspace/service
     command: bash
+    environment:
+      PYTHONPATH: /workspace/service/src
     volumes:
       - .:/workspace
