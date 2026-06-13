@@ -48,6 +48,9 @@ jobs:
   lint:
     name: Ruff lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: service
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -72,6 +75,9 @@ jobs:
     name: Build package
     runs-on: ubuntu-latest
     needs: [test, lint]
+    defaults:
+      run:
+        working-directory: service
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -111,7 +117,7 @@ jobs:
           . /tmp/pkg-smoke/bin/activate
           python -m pip install --upgrade pip
           python -m pip install "$WHEEL"
-          analysis-stability sample-data --out /tmp/ase-data --rows 50
+          analysis-stability sample-data --out /tmp/ase-data
           analysis-stability profile /tmp/ase-data/baseline.csv /tmp/ase-data/candidate.csv --out /tmp/ase-report/profile.json
           test -f /tmp/ase-report/profile.json
 
